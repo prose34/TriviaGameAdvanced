@@ -17,10 +17,6 @@
 
 
 
-
-
-
-
 // when the html has loaded, run the following code
 $(document).ready(function() {
 
@@ -31,8 +27,28 @@ $(document).ready(function() {
     var timeDecrement;
 
     var questionList = [{
-
+        q: "In what comic book did Spider-Man first appear?",
+        choices: ["Amazing Spider-man #1", "Spectacular Spider-man #1", "Amazing Fantasy #15", "Avengers #1"],
+        answer: 2,
+    },{
+        q: "Who does the Silver Surfer serve?",
+        choices: ["The Beyonder", "Galactus", "Thanos", "Dormammu"],
+        answer: 1,
+    },{
+        q: "Do did Bruce Banner/The Hulk get his powers?",
+        choices: ["Spider Bite", "Solar Radiation", "Genetic Mutation", "Gamma Radiation"],
+        answer: 3,
+    },{
+        q: "Who was the founder of the X-men?",
+        choices: ["Magneto", "Professor X", "Wolverine", "Cyclops"],
+        answer: 1,
+    },{
+        q: "Which comic book artist is nicknamed 'The King'?",
+        choices: ["Jack Kirby", "Steve Ditko", "Stan Lee", "Todd McFarlane"],
+        answer: 0,
     }];
+
+    console.log(questionList[0].q);
 
     // hide the questions and end results until they are called
     $(".gameQuestions").hide();
@@ -43,6 +59,7 @@ $(document).ready(function() {
         $(".starter").hide();
         $(".gameQuestions").show();
         countdownInterval(); //start the timer when the questions are displayed
+        questionGenerator();
     })
 
     // create a function that will decrement the timer by one and end the game if the timer is up 
@@ -72,7 +89,8 @@ $(document).ready(function() {
 
     
     function questionGenerator () {
-        
+        for (i = 0; i < questionList.length; i++)
+        $('#questionText').html(questionList[i].q);
     }
 
 

@@ -25,11 +25,14 @@ $(document).ready(function() {
     var unaswered = 0;
     var timer = 10;
     var timeDecrement;
+    var currentQuestion = 0;
+    var userAnswer;
 
     var questionList = [{
         q: "In what comic book did Spider-Man first appear?",
         choices: ["Amazing Spider-man #1", "Spectacular Spider-man #1", "Amazing Fantasy #15", "Avengers #1"],
         answer: 2,
+        gif: "test",
     },{
         q: "Who does the Silver Surfer serve?",
         choices: ["The Beyonder", "Galactus", "Thanos", "Dormammu"],
@@ -48,11 +51,22 @@ $(document).ready(function() {
         answer: 0,
     }];
 
+    var answerMessage = {
+        correct: "CORRECT!",
+        incorrect: "WRONG!",
+        endTime: "OUT OF TIME!",
+        finished: "Here are your results:"
+    }
+
     console.log(questionList[0].q);
+    console.log(questionList[0].choices[0]);
+
 
     // hide the questions and end results until they are called
     $(".gameQuestions").hide();
+    $(".questionResult").hide();
     $(".endGame").hide();
+    
 
     //  hide the starter container when it is clicked and pull up the question container
     $(".starter").on("click", function () {
@@ -63,7 +77,7 @@ $(document).ready(function() {
     })
 
     // create a function that will decrement the timer by one and end the game if the timer is up 
-    // check results.
+    // show results when time is up
     function countdown () {
 
         timer--;
@@ -73,7 +87,6 @@ $(document).ready(function() {
         if (timer < 0.1) { //I have this set to 0.1 just so a negative number doesn't show up for a split second when the timer resets when the game is reset
             $(".gameQuestions").hide();
             $(".endGame").show();
-            // clearInterval(timeDecrement);
             checkResults(); // move on to check results
 
         };
@@ -82,29 +95,71 @@ $(document).ready(function() {
 
     // this function makes the countdown function repeat at an increment of 1 second
     function countdownInterval () {
-
        timeDecrement = setInterval(countdown, 1000);
-
     };
 
     
     function questionGenerator () {
-        for (i = 0; i < questionList.length; i++)
-        $('#questionText').html(questionList[i].q);
+
+        $('#questionText').html(questionList[currentQuestion].q);
+            
+        $("#option1").html(questionList[currentQuestion].choices[0]);
+        $("#option2").html(questionList[currentQuestion].choices[1]);
+        $("#option3").html(questionList[currentQuestion].choices[2]);
+        $("#option4").html(questionList[currentQuestion].choices[3]);
+
+        $(".multipleChoice").on("click", function (){
+            // when you click on one of the four options the program should move onto the results display
+            // five seconds after the results are displayed, add one to the current question and begin again
+            // when the currentquestions run out go to results screen
+            userAnswer = $(this).html();
+            analyzeAnswer(); 
+            $(".questionResult").show();
+            $(".gameQuestions").hide();
+
+            // console.log($(this).html());
+        });
+
+    };
+
+
+    function analyzeAnswer () {
+    
+        // first clear questions and display wheter or not answer was correct and the gif. end after 5 seconds
+
+        // i want to reactivate the question generator here, so lets add one to currectquestions
+    
+        // console.log(questionList[currentQuestion].answer);
+
+        if(userAnswer === questionList[currentQuestion].choices.indexOf(questionList[currentQuestion].answer)) {
+            correctAnswers++;
+        }
+
+        correctAnswer();
+
+        // console.log(correctAnswers);
+    };
+
+    function correctAnswer () {
+
+        clearInterval(timeDecrement);
+        $('#timer').hide();
+        $('#questionText').hide();
+            
+        $("#option1").hide();
+        $("#option2").hide();
+        $("#option3").hide();
+        $("#option4").hide();
+
+        correctAnswer++;
     }
+
+
 
 
     function checkResults () {
 
         clearInterval(timeDecrement); // end the countdown function and stop interval timing
-
-        //set the value chose in the radio button by the user equal to a variable
-        // grabbing value from html value (string)
-        var Q1 = $('input:radio[name="q1"]:checked').val();
-        var Q2 = $('input:radio[name="q2"]:checked').val();
-        var Q3 = $('input:radio[name="q3"]:checked').val();
-        var Q4 = $('input:radio[name="q4"]:checked').val();
-        var Q5 = $('input:radio[name="q5"]:checked').val();
     
         // if statements to compare answer to correct answer, add to incorrect or unanswered total as well
 
@@ -122,11 +177,6 @@ $(document).ready(function() {
         $(".gameQuestions").hide();
         $(".endGame").hide();
         $(".starter").show();
-
-        // clear radio buttons
-        // $(this).prop('checked', false);
-        $("input").prop("checked", false); //this will clear out all of the selected choices in the radio buttons
-
 
         correctAnswers = 0;
         incorrectAnswers = 0;

@@ -28,9 +28,10 @@ $(document).ready(function() {
     var correctAnswers = 0; //number of correct answers user has. this will be incremented up one on a correct answer
     var incorrectAnswers = 0; //number of incorrect answers user has. this will be incremented up one on a wrong answer
     var unaswered = 0; //number of unanswered questions user has. this will increment up when no answer is selected and time runs out
-    var timer = 10; //this timer is for each question. the user has ten seconds to choose an answer for each multiple choice question
+    var timer = 11; //this timer is for each question. the user has ten seconds to choose an answer for each multiple choice question
     var timerForResults = 5; //this is the timer for the results screen that pops up after the user selects an answer. this in-between results screen goes to the next question or final results after 5 seconds
     var timeDecrement; //need to establish this variable here in the global scope so we can properly assign and clear intervals as needed. 
+    var resultsTimeDecrement; //same as above, but for resultstimer
     var currentQuestion = 0; //this is the current question the user is on. starting at 0 index in order to use as a reference inside the questionList array of objects
     var userAnswer; //global variable that can be assigned to the answer the user selects in the multiple choice game
 
@@ -105,11 +106,11 @@ $(document).ready(function() {
     // show individual results when time is up
     function countdown () {
 
-        timer--;
+        timer--; //decrement the timer variable by 1 
 
-        $('#timeRemaining').html(timer + " Seconds");
+        $('#timeRemaining').html(timer + " Seconds"); //display the remaining time in the element with the timeRemaining ID
 
-        if (timer < 0.1) { //I have this set to 0.1 just so a negative number doesn't show up for a split second when the timer resets when the game is reset/new question comes up
+        if (timer < 1) { //I have this set to 0.1 just so a negative number doesn't show up for a split second when the timer resets when the game is reset/new question comes up
             $(".gameQuestions").hide(); //hide the question when time is up
             $(".questionResult").show(); //pull up individual results when time is up
             analyzeAnswer(); //check results
@@ -120,155 +121,172 @@ $(document).ready(function() {
 
     // this function makes the countdown function repeat at an increment of 1 second
     function countdownInterval () {
-       timeDecrement = setInterval(countdown, 1000);
+       timeDecrement = setInterval(countdown, 1000); //the setInterval function grabs the countdown function and makes it repeat every 1000 miliseconds. set it equal to timeDecrement in order to clear it/stop calling it later
     };
 
 
 
+
+
+
+    // this is another timing function intended to make the intermediate results (individual question result) page visible for 5 seconds
     function resultsTimer () {
 
-        timerForResults--;
+        timerForResults--; //decrement the time this part of the program will show up for
 
-        if (timer < 0.1) {
-            // hide results, show questions, initialize new questions
-            $(".gameQuestions").show();
-            $(".questionResult").hide();
-            questionGenerator();
+        if (timerForResults < 0) { // when time reaches near 0, show the next question, and hide the result page
+            nextQuestion();
         }
     
     }
 
+    //this function sets the interval at which the resultsTimer runs. runs every second. 
     function resultsCountdownInterval () {
-        timeDecrement = setInterval(resultsTimer, 1000);
+        resultsTimeDecrement = setInterval(resultsTimer, 1000);
     }
 
 
 
 
 
-    //need to make sure unanswered questions are being accounted for
 
 
-
-
-    
+    // this code runs when the start button is clicked or time runs out on the individual question result page
     function questionGenerator () {
 
-        // $(".gameQuestions").show();
-
-        $('#questionText').html(questionList[currentQuestion].q);
+        console.log(currentQuestion);
+        $('#questionText').html(questionList[currentQuestion].q); //display the current question - cycle through the array object based on the currentQuestion variable value
             
-        $("#option1").html(questionList[currentQuestion].choices[0]);
+        // show all possible choices
+        $("#option1").html(questionList[currentQuestion].choices[0]); 
         $("#option2").html(questionList[currentQuestion].choices[1]);
         $("#option3").html(questionList[currentQuestion].choices[2]);
         $("#option4").html(questionList[currentQuestion].choices[3]);
 
-        $(".multipleChoice").on("click", function (){
-            // when you click on one of the four options the program should move onto the results display
-            // five seconds after the results are displayed, add one to the current question and begin again
-            // when the currentquestions run out go to results screen
-            userAnswer = $(this).html();
-            analyzeAnswer(); 
-            $(".questionResult").show();
-            $(".gameQuestions").hide();
-
-            console.log(userAnswer);
+        $(".multipleChoice").on("click", function (){  // when you click on one of the four options the program will do the following:
+            userAnswer = $(this).html(); //save the value/answer that the user clicked on
+            $(".gameQuestions").hide(); //hide the questions and answers
+            $(".questionResult").show(); //show the individual result answer - display if the user was right, wrong, or didn't answer the question
+            analyzeAnswer(); //run the function that determines if the user was correct, wrong, or didn't answer
+            
         });
 
     };
 
 
-
-
-
+    // i need something to stop the game based on currentquestion length. 
+    // always stop and get user answer
 
 
     function analyzeAnswer () {
     
-        // first clear questions and display wheter or not answer was correct and the gif. end after 5 seconds
-
-        // i want to reactivate the question generator here, so lets add one to currectquestions
-    
-        // console.log(questionList[currentQuestion].answer);
-        clearInterval(timeDecrement);
-
-        if(userAnswer === questionList[currentQuestion].choices[questionList[currentQuestion].answer]) {
-            correctAnswers++;
-        } else if (userAnswer !== questionList[currentQuestion].choices[questionList[currentQuestion].answer]) {
-            incorrectAnswers++;
-        } else if (userAnswer === undefined) {
-            una
-        }
-
-        
-        console.log(userAnswer);
-        console.log(questionList[currentQuestion].choices[questionList[currentQuestion].answer]);
-        console.log(correctAnswers);
-        console.log(incorrectAnswers);
-
-        currentQuestion++; 
+        clearInterval(timeDecrement); //end the timer associated with answering the question
         resultsCountdownInterval();
 
+        // these if statements compare the user selected answer to the correct answer and add to the 
+        // appropriate score variable. a message is displayed depending on what the user selected as well
+        // display gif as well 
+        // say correct answer?
+        if(userAnswer === questionList[currentQuestion].choices[questionList[currentQuestion].answer]) {
+            correctAnswers++;
+            $('#correctOrIncorrect').html(answerMessage.correct);
+        } else if (userAnswer === undefined) {
+            unaswered++;
+            $('#outOfTime').html(answerMessage.endTime);
+        } else {
+            incorrectAnswers++;
+            $('#correctOrIncorrect').html(answerMessage.incorrect);
+        }
 
-        // we want to move onto the next question after 5 seconds. call timer and question generator in that function
+        // logging to check results
+        console.log(userAnswer);
+
+        console.log(correctAnswers);
+        console.log(incorrectAnswers);
+        console.log(unaswered);
+
+        //increment the current question by one and then move onto the next question
+
+        // nextQuestion();
 
         // questionGenerator();
-        // correctAnswer();
 
-        // console.log(correctAnswers);
+        // we want to move onto the next question after 5 seconds. call timer and question generator in that function
     };
 
 
 
-
-
-
-
-
-
-    function correctAnswer () {
-
-        // correctAnswerTimer--
-
-        clearInterval(timeDecrement);
-        $('#timer').hide();
-        $('#questionText').hide();
-            
-        $("#option1").hide();
-        $("#option2").hide();
-        $("#option3").hide();
-        $("#option4").hide();
-
-        // if timer reaches 0 move to next question
+    function nextQuestion () {
+        currentQuestion++;
+        clearInterval(resultsTimeDecrement);
+        timer = 10;
+        timerForResults = 5;
+        $(".questionResult").hide();
+        $(".gameQuestions").show();
+        questionGenerator();
+        countdownInterval();
 
     }
 
-    function checkResults () {
 
-        clearInterval(timeDecrement); // end the countdown function and stop interval timing
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // function correctAnswer () {
+
+    //     // correctAnswerTimer--
+
+    //     clearInterval(timeDecrement);
+    //     $('#timer').hide();
+    //     $('#questionText').hide();
+            
+    //     $("#option1").hide();
+    //     $("#option2").hide();
+    //     $("#option3").hide();
+    //     $("#option4").hide();
+
+    //     // if timer reaches 0 move to next question
+
+    // }
+
+    // function checkResults () {
+
+    //     clearInterval(timeDecrement); // end the countdown function and stop interval timing
     
-        // if statements to compare answer to correct answer, add to incorrect or unanswered total as well
+    //     // if statements to compare answer to correct answer, add to incorrect or unanswered total as well
 
-        // display total number of correct, wrong, and unanswered questions on end results container
-        $("#correctAnswers").html(correctAnswers);
-        $("#incorrectAnswers").html(incorrectAnswers);
-        $("#unanswered").html(unaswered);
+    //     // display total number of correct, wrong, and unanswered questions on end results container
+    //     $("#correctAnswers").html(correctAnswers);
+    //     $("#incorrectAnswers").html(incorrectAnswers);
+    //     $("#unanswered").html(unaswered);
 
-        // reset the game if the reset button is pressed
-        $("#restartButton").on("click", resetGame);
+    //     // reset the game if the reset button is pressed
+    //     $("#restartButton").on("click", resetGame);
 
-    };
+    // };
 
-    function resetGame () {
-        $(".gameQuestions").hide();
-        $(".endGame").hide();
-        $(".starter").show();
+    // function resetGame () {
+    //     $(".gameQuestions").hide();
+    //     $(".endGame").hide();
+    //     $(".starter").show();
 
-        correctAnswers = 0;
-        incorrectAnswers = 0;
-        unaswered = 0;
-        timer = 10;
-        $('#timeRemaining').html(timer + " Seconds");
-    };
+    //     correctAnswers = 0;
+    //     incorrectAnswers = 0;
+    //     unaswered = 0;
+    //     timer = 10;
+    //     $('#timeRemaining').html(timer + " Seconds");
+    // };
 
 });

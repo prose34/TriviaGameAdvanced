@@ -9,6 +9,9 @@ body {
     /* background-position: center; */
 }
 
+h5:hover {
+    background-color: lightblue;
+}
 
 .triviaTitle {
     margin-top: 10px;

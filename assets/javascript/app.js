@@ -20,14 +20,21 @@
 // when the html has loaded, run the following code
 $(document).ready(function() {
 
-    var correctAnswers = 0;
-    var incorrectAnswers = 0;
-    var unaswered = 0;
-    var timer = 10;
-    var timeDecrement;
-    var currentQuestion = 0;
-    var userAnswer;
+    // this section is for variables
+    // =============================================================================================================
+    // =============================================================================================================
+    // =============================================================================================================
 
+    var correctAnswers = 0; //number of correct answers user has. this will be incremented up one on a correct answer
+    var incorrectAnswers = 0; //number of incorrect answers user has. this will be incremented up one on a wrong answer
+    var unaswered = 0; //number of unanswered questions user has. this will increment up when no answer is selected and time runs out
+    var timer = 10; //this timer is for each question. the user has ten seconds to choose an answer for each multiple choice question
+    var timerForResults = 5; //this is the timer for the results screen that pops up after the user selects an answer. this in-between results screen goes to the next question or final results after 5 seconds
+    var timeDecrement; //need to establish this variable here in the global scope so we can properly assign and clear intervals as needed. 
+    var currentQuestion = 0; //this is the current question the user is on. starting at 0 index in order to use as a reference inside the questionList array of objects
+    var userAnswer; //global variable that can be assigned to the answer the user selects in the multiple choice game
+
+    // this is the array of questions, each item in the array is an object containing: the question, answer choices, correct answer, and a gif to be displayed
     var questionList = [{
         q: "In what comic book did Spider-Man first appear?",
         choices: ["Amazing Spider-man #1", "Spectacular Spider-man #1", "Amazing Fantasy #15", "Avengers #1"],
@@ -51,6 +58,7 @@ $(document).ready(function() {
         answer: 0,
     }];
 
+    // these messages will display after the user selects an answer for a question
     var answerMessage = {
         correct: "CORRECT!",
         incorrect: "WRONG!",
@@ -58,11 +66,20 @@ $(document).ready(function() {
         finished: "Here are your results:"
     }
 
-    console.log(questionList[0].q);
-    console.log(questionList[0].choices[0]);
+    // logging to test outcome of looking inside array object
+    // console.log(questionList[0].answer);
+    // console.log(questionList[0].choices[2]);
+    // console.log(questionList[currentQuestion].answer);
+    // console.log(questionList[currentQuestion].choices[questionList[currentQuestion].answer]);
 
 
-    // hide the questions and end results until they are called
+    // begin the game section   
+    // =============================================================================================================
+    // =============================================================================================================
+    // =============================================================================================================
+
+
+    // hide the questions, individual question results and final tally end results until they are called
     $(".gameQuestions").hide();
     $(".questionResult").hide();
     $(".endGame").hide();
@@ -72,22 +89,30 @@ $(document).ready(function() {
     $(".starter").on("click", function () {
         $(".starter").hide();
         $(".gameQuestions").show();
-        countdownInterval(); //start the timer when the questions are displayed
-        questionGenerator();
+        countdownInterval(); //start the timer when the questions are displayed. 10 sec per question
+        questionGenerator(); //call the questions. cycle through and display the questions one by one
     })
 
-    // create a function that will decrement the timer by one and end the game if the timer is up 
-    // show results when time is up
+
+
+
+
+
+
+
+
+    // create a function that will decrement the timer by one and skip the question (mark unanswered) if the timer is up 
+    // show individual results when time is up
     function countdown () {
 
         timer--;
 
         $('#timeRemaining').html(timer + " Seconds");
 
-        if (timer < 0.1) { //I have this set to 0.1 just so a negative number doesn't show up for a split second when the timer resets when the game is reset
-            $(".gameQuestions").hide();
-            $(".endGame").show();
-            checkResults(); // move on to check results
+        if (timer < 0.1) { //I have this set to 0.1 just so a negative number doesn't show up for a split second when the timer resets when the game is reset/new question comes up
+            $(".gameQuestions").hide(); //hide the question when time is up
+            $(".questionResult").show(); //pull up individual results when time is up
+            analyzeAnswer(); //check results
 
         };
 
@@ -98,8 +123,38 @@ $(document).ready(function() {
        timeDecrement = setInterval(countdown, 1000);
     };
 
+
+
+    function resultsTimer () {
+
+        timerForResults--;
+
+        if (timer < 0.1) {
+            // hide results, show questions, initialize new questions
+            $(".gameQuestions").show();
+            $(".questionResult").hide();
+            questionGenerator();
+        }
+    
+    }
+
+    function resultsCountdownInterval () {
+        timeDecrement = setInterval(resultsTimer, 1000);
+    }
+
+
+
+
+
+    //need to make sure unanswered questions are being accounted for
+
+
+
+
     
     function questionGenerator () {
+
+        // $(".gameQuestions").show();
 
         $('#questionText').html(questionList[currentQuestion].q);
             
@@ -117,10 +172,15 @@ $(document).ready(function() {
             $(".questionResult").show();
             $(".gameQuestions").hide();
 
-            // console.log($(this).html());
+            console.log(userAnswer);
         });
 
     };
+
+
+
+
+
 
 
     function analyzeAnswer () {
@@ -130,17 +190,45 @@ $(document).ready(function() {
         // i want to reactivate the question generator here, so lets add one to currectquestions
     
         // console.log(questionList[currentQuestion].answer);
+        clearInterval(timeDecrement);
 
-        if(userAnswer === questionList[currentQuestion].choices.indexOf(questionList[currentQuestion].answer)) {
+        if(userAnswer === questionList[currentQuestion].choices[questionList[currentQuestion].answer]) {
             correctAnswers++;
+        } else if (userAnswer !== questionList[currentQuestion].choices[questionList[currentQuestion].answer]) {
+            incorrectAnswers++;
+        } else if (userAnswer === undefined) {
+            una
         }
 
-        correctAnswer();
+        
+        console.log(userAnswer);
+        console.log(questionList[currentQuestion].choices[questionList[currentQuestion].answer]);
+        console.log(correctAnswers);
+        console.log(incorrectAnswers);
+
+        currentQuestion++; 
+        resultsCountdownInterval();
+
+
+        // we want to move onto the next question after 5 seconds. call timer and question generator in that function
+
+        // questionGenerator();
+        // correctAnswer();
 
         // console.log(correctAnswers);
     };
 
+
+
+
+
+
+
+
+
     function correctAnswer () {
+
+        // correctAnswerTimer--
 
         clearInterval(timeDecrement);
         $('#timer').hide();
@@ -151,11 +239,9 @@ $(document).ready(function() {
         $("#option3").hide();
         $("#option4").hide();
 
-        correctAnswer++;
+        // if timer reaches 0 move to next question
+
     }
-
-
-
 
     function checkResults () {
 

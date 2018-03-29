@@ -28,10 +28,12 @@ $(document).ready(function() {
     var correctAnswers = 0; //number of correct answers user has. this will be incremented up one on a correct answer
     var incorrectAnswers = 0; //number of incorrect answers user has. this will be incremented up one on a wrong answer
     var unaswered = 0; //number of unanswered questions user has. this will increment up when no answer is selected and time runs out
-    var timer = 11; //this timer is for each question. the user has ten seconds to choose an answer for each multiple choice question
+    
+    var timer = 10; //this timer is for each question. the user has ten seconds to choose an answer for each multiple choice question
     var timerForResults = 5; //this is the timer for the results screen that pops up after the user selects an answer. this in-between results screen goes to the next question or final results after 5 seconds
     var timeDecrement; //need to establish this variable here in the global scope so we can properly assign and clear intervals as needed. 
     var resultsTimeDecrement; //same as above, but for resultstimer
+    
     var currentQuestion = 0; //this is the current question the user is on. starting at 0 index in order to use as a reference inside the questionList array of objects
     var userAnswer; //global variable that can be assigned to the answer the user selects in the multiple choice game
 
@@ -207,10 +209,6 @@ $(document).ready(function() {
 
         //increment the current question by one and then move onto the next question
 
-        // nextQuestion();
-
-        // questionGenerator();
-
         // we want to move onto the next question after 5 seconds. call timer and question generator in that function
     };
 
@@ -223,8 +221,8 @@ $(document).ready(function() {
         timerForResults = 5;
         $(".questionResult").hide();
         $(".gameQuestions").show();
-        questionGenerator();
         countdownInterval();
+        questionGenerator();
 
     }
 
